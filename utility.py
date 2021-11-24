@@ -90,20 +90,34 @@ def add_person(first,last, id):
     cur = conn.cursor()
 
     #generate email
-    email = first +last+ str(datetime.now().timestamp())+"@fake.com"
+    #email = first +last+ str(datetime.now().timestamp())+"@fake.com"
+    email = "duplicated"
     print(f"email: {email}")
 
     #person exists in the people table
-    #if(exists_in_people(email,cur) == True):
-    #    return -1
-    
-    #person doesn't exist in people table. Add him
-    #else:
-        #add person info to people table 
-    #    cur.execute(f"INSERT INTO PEOPLE (EMAIL,NAME,ID) \
-     #       VALUES (DEFAULT,'{email}',TIMESTAMP '{date_obj}',{room_id})")
+    if(exists_in_people(email,cur) == True):
+        print("person with this email exists")
+        return -1
 
+    #person doesn't exist in people table. Add him
+     
+    print("email doesn't exist")
+
+    #person doesn't exist in people table. Add them
+    name = first + " " + last
     
+    #add person info to people table 
+    cur.execute(f"INSERT INTO PEOPLE (EMAIL,NAME,ID) \
+        VALUES ('{email}','{name}',{id})")
+    
+    #commit changes to db
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return 0
+
+        
 
 if __name__ == "__main__":
     if(len(sys.argv) == 4):
