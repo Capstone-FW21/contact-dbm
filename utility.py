@@ -81,7 +81,7 @@ def exists_in_people(email,cur):
 
 
 # add person to people table
-def add_person(name, id):
+def add_person(first,last, id):
     
     #Conect to DB
     conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
@@ -90,7 +90,7 @@ def add_person(name, id):
     cur = conn.cursor()
 
     #generate email
-    email = name + datetime.now().timestamp()
+    email = first +last+ str(datetime.now().timestamp())+"@fake.com"
     print(f"email: {email}")
 
     #person exists in the people table
@@ -106,10 +106,10 @@ def add_person(name, id):
     
 
 if __name__ == "__main__":
-    if(len(sys.argv) == 3):
+    if(len(sys.argv) == 4):
         #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
         #    print("success")
         #else:
         #    print("failed")
-        add_person(sys.argv[1],sys.argv[2])
+        add_person(sys.argv[1],sys.argv[2],sys.argv[3])
         
