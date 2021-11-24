@@ -18,7 +18,7 @@ def create_datetime_obj(time):
     
     #add timezone
     timezone = pytz.timezone("UTC")
-    date_obj = timezone.localize(date_obj_no_tz)
+    date_obj = timezone.localize(datetime_obj_no_tz)
 
     return date_obj
     
@@ -27,11 +27,7 @@ def create_datetime_obj(time):
 def add_scan(email,time,room_id):
     
     #Conect to DB
-    try:
-        conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
-    #error connecting to DB
-    except:
-        return -1
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
     
     #cursor
     cur = conn.cursor()
@@ -40,6 +36,8 @@ def add_scan(email,time,room_id):
 
     #validate email format
     if(validate_email_format(email) == -1):
+        print("invalid email")
+        cur.close()
         conn.close()
         return -1
     
@@ -49,6 +47,8 @@ def add_scan(email,time,room_id):
     
     #invalid date format
     except:
+        print("invalid date")
+        cur.close()
         conn.close()
         return -1
     
@@ -59,14 +59,57 @@ def add_scan(email,time,room_id):
     
     #commit changes to db
     conn.commit()
+    cur.close()
     conn.close()
     
     #success
     return 0
 
+
+def exists_in_people(email,cur):
+
+    cur.execute(f"SELECT COUNT(*) FROM PEOPLE WHERE email == '{email}'")
+    result = cur.fetchone()
+    print(f"returned from count query: {result[0]}")
+
+    #person exists in people table
+    if(result[0] != 0):
+        return True
+    #person doesn't exist in people table
+    else:
+        return False
+
+
+# add person to people table
+def add_person(name, id):
+    
+    #Conect to DB
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
+    
+    #cursor
+    cur = conn.cursor()
+
+    #generate email
+    email = name + datetime.now().timestamp()
+    print(f"email: {email}")
+
+    #person exists in the people table
+    #if(exists_in_people(email,cur) == True):
+    #    return -1
+    
+    #person doesn't exist in people table. Add him
+    #else:
+        #add person info to people table 
+    #    cur.execute(f"INSERT INTO PEOPLE (EMAIL,NAME,ID) \
+     #       VALUES (DEFAULT,'{email}',TIMESTAMP '{date_obj}',{room_id})")
+
+    
+
 if __name__ == "__main__":
-    if(len(sys.argv) == 4):
-        if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
-            print("success")
-        else:
-            print("failed")
+    if(len(sys.argv) == 3):
+        #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
+        #    print("success")
+        #else:
+        #    print("failed")
+        add_person(sys.argv[1],sys.argv[2])
+        
