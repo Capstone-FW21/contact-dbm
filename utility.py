@@ -68,7 +68,7 @@ def add_scan(email,time,room_id):
 
 def exists_in_people(email,cur):
 
-    cur.execute(f"SELECT COUNT(*) FROM PEOPLE WHERE email == '{email}'")
+    cur.execute(f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
     result = cur.fetchone()
     print(f"returned from count query: {result[0]}")
 
