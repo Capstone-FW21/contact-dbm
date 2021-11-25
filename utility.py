@@ -165,7 +165,7 @@ def add_room(room_id:str,capacity:int,building_name:str):
     
     #add room to rooms table 
     cur.execute(f"INSERT INTO ROOMS (room_id,capacity,building_name) \
-        VALUES ('{room_id}','{capacity}',{building_name})")
+        VALUES ('{room_id}','{capacity}','{building_name}')")
     
     #commit changes to db
     conn.commit()
