@@ -217,7 +217,7 @@ def get_all_users():
 
 
 if __name__ == "__main__":
-    if(len(sys.argv) == 4):
+    if(len(sys.argv) == 1):
         #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
         #    print("success")
         #else:
@@ -225,7 +225,9 @@ if __name__ == "__main__":
         #add_person(sys.argv[1],sys.argv[2],sys.argv[3])
         #get_person(sys.argv[1])
         #get_all_users()
-        add_room(sys.argv[1],sys.argv[2],sys.argv[3])
+        #add_room(sys.argv[1],sys.argv[2],sys.argv[3])
+        get_room(sys.argv[1])
+
     
         
 
