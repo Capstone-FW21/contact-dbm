@@ -2,7 +2,6 @@ import psycopg2
 import re
 from datetime import datetime
 import sys
-import pytz
 
 #check email format  
 def validate_email_format(email:str):  
