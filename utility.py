@@ -5,58 +5,35 @@ import sys
 import pytz
 
 #check email format  
-def validate_email_format(email):  
+def validate_email_format(email:str):  
     regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$' 
 
     if(re.search(regex,email) == None):   
-        return -1
-
-#create datetime object
-def create_datetime_obj(time):
-    #create datetime object without timezone
-    datetime_obj_no_tz = datetime.strptime(time,"%Y-%m-%d %H:%M:%S")
-    
-    #add timezone
-    timezone = pytz.timezone("UTC")
-    date_obj = timezone.localize(datetime_obj_no_tz)
-
-    return date_obj
-    
-    
+        return False
+   
 #add a scan to the scans table in db
 # returns -1 in case of an invalid email format
-# or invalid datetime input 
 # throws exception in case of error accessing db 
-def add_scan(email,time,room_id):
+def add_scan(email:str,room_id:str):
     
     #Conect to DB
     conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
     
-    #cursor
+    #Cursor
     cur = conn.cursor()
     
-    #sanitize scan info
-
-    #validate email format
-    if(validate_email_format(email) == -1):
+    #Invalid email format
+    if(validate_email_format(email) == False):
         cur.close()
         conn.close()
         return -1
     
-    #create datetime obj
-    try:
-        date_obj = create_datetime_obj(time)
+    #create current datetime obj
+    current_date_time = datetime.now()
     
-    #invalid date format
-    except:
-        cur.close()
-        conn.close()
-        return -1
-    
-
     #add scan info to scans table 
-    cur.execute(f"INSERT INTO SCANS (SCAN_ID, PERSON_EMAIL,SCAN_TIME,ROOM_ID) \
-            VALUES (DEFAULT,'{email}',TIMESTAMP '{date_obj}',{room_id})")
+    cur.execute(f"INSERT INTO scans (scan_id, person_email,scan_time,room_id) \
+            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}',{room_id})")
     
     #commit changes to db
     conn.commit()
@@ -65,6 +42,26 @@ def add_scan(email,time,room_id):
     
     #success
     return 0
+
+#retrieves scan info
+#returns -1 if no match found 
+def get_scan(scan_id:int):
+    
+     #Conect to DB
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
+    
+    #cursor
+    cur = conn.cursor()
+    
+    cur.execute(f"SELECT * FROM scans WHERE scan_id = '{scan_id}'")
+    
+    #scan row
+    result = cur.fetchone()
+   
+    cur.close()
+    conn.close()
+
+    return result
 
 #Checks if a person with the specified email exists in the people table
 def exists_in_people(email,cur):
@@ -80,9 +77,8 @@ def exists_in_people(email,cur):
     else:
         return False
 
-
 # add person to people table
-def add_person(first,last, id):
+def add_person(first:str,last:str, id:int):
     
     #Conect to DB
     conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
@@ -94,7 +90,7 @@ def add_person(first,last, id):
     email = first +last+ str(datetime.now().timestamp())+"@fake.com"
     
     #person exists in the people table
-    if(exists_in_people(email,cur) == True):
+    if(exists_in_people(email,cur)):
         return -1
 
     name = first + " " + last
@@ -112,7 +108,8 @@ def add_person(first,last, id):
 
 #retrieves info for person with email from db
 #returns -1 if no match found 
-def get_person(email):
+def get_person(email:str):
+
     
      #Conect to DB
     conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
@@ -122,17 +119,80 @@ def get_person(email):
     
     cur.execute(f"SELECT * FROM PEOPLE WHERE email = '{email}'")
     
+    #person row
+    result = cur.fetchone()
+   
+    cur.close()
+    conn.close()
+
+    return result
+
+
+#Checks if room with room_id already exists
+def exists_in_rooms(room_id:str,cur):
+
+    cur.execute(f"SELECT COUNT(*) FROM ROOMS WHERE room_id = '{room_id}'")
+    
     result = cur.fetchone()
     
-    #person exists in people table
-    if(result is not None):
-        print(result)
-    #person doesn't exist in people table
+    #room exists in rooms table
+    if(result[0] != 0):
+        return True
+    #rooms doesn't exist in rooms table
     else:
-        print("person doesn't exist")
+        return False
+
+#add room entry to room table
+def add_room(room_id:str,capacity:int,building_name:str):
+    
+    #Conect to DB
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
+    
+    #cursor
+    cur = conn.cursor()
+
+
+    if((len(room_id) == 0) or (len(building_name) == 0)):
         cur.close()
         conn.close()
         return -1
+
+    #person exists in the people table
+    if(exists_in_rooms(room_id,cur)):
+        cur.close()
+        conn.close()
+        return -1
+    
+    #add room to rooms table 
+    cur.execute(f"INSERT INTO ROOMS (room_id,capacity,building_name) \
+        VALUES ('{room_id}','{capacity}',{building_name})")
+    
+    #commit changes to db
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return 0
+
+#retrieves room info
+#returns -1 if no match found 
+def get_room(room_id:str):
+    
+     #Conect to DB
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
+    
+    #cursor
+    cur = conn.cursor()
+    
+    cur.execute(f"SELECT * FROM ROOMS WHERE room_id = '{room_id}'")
+    
+    #room row
+    result = cur.fetchone()
+   
+    cur.close()
+    conn.close()
+
+    return result
 
 #retrieves all users from people table 
 def get_all_users():
@@ -142,36 +202,30 @@ def get_all_users():
     
     #cursor
     cur = conn.cursor()
-    
+
+    #execute query    
     cur.execute(f"SELECT * FROM PEOPLE")
     
+    #rows
     result = cur.fetchall()
     
-    #table is not empty
-    if(result is not None):
-        print(result)
-    #table is empty
-    else:
-        print("Table is empty")
-        cur.close()
-        conn.close()
-        return -1
+    cur.close()
+    conn.close()
 
-
-
-
+    return result
 
 
 
 if __name__ == "__main__":
-    if(len(sys.argv) == 1):
+    if(len(sys.argv) == 4):
         #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
         #    print("success")
         #else:
         #    print("failed")
         #add_person(sys.argv[1],sys.argv[2],sys.argv[3])
         #get_person(sys.argv[1])
-        get_all_users()
+        #get_all_users()
+        add_room(sys.argv[1],sys.argv[2],sys.argv[3])
     
         
 
