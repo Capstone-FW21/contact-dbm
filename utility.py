@@ -64,7 +64,7 @@ def get_scan(scan_id:int):
     return result
 
 #Checks if a person with the specified email exists in the people table
-def exists_in_people(email,cur):
+def exists_in_people(email:str,cur):
 
     cur.execute(f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
     
@@ -126,7 +126,6 @@ def get_person(email:str):
     conn.close()
 
     return result
-
 
 #Checks if room with room_id already exists
 def exists_in_rooms(room_id:str,cur):
@@ -213,21 +212,6 @@ def get_all_users():
     conn.close()
 
     return result
-
-
-
-if __name__ == "__main__":
-    if(len(sys.argv) == 2):
-        #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
-        #    print("success")
-        #else:
-        #    print("failed")
-        #add_person(sys.argv[1],sys.argv[2],sys.argv[3])
-        #get_person(sys.argv[1])
-        #get_all_users()
-        #add_room(sys.argv[1],sys.argv[2],sys.argv[3])
-        print(get_room(sys.argv[1]))
-
-    
+   
         
 
