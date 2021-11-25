@@ -23,7 +23,10 @@ def create_datetime_obj(time):
     return date_obj
     
     
-#add a scan to the scans table in db 
+#add a scan to the scans table in db
+# returns -1 in case of an invalid email format
+# or invalid datetime input 
+# throws exception in case of error accessing db 
 def add_scan(email,time,room_id):
     
     #Conect to DB
@@ -36,7 +39,6 @@ def add_scan(email,time,room_id):
 
     #validate email format
     if(validate_email_format(email) == -1):
-        print("invalid email")
         cur.close()
         conn.close()
         return -1
@@ -47,7 +49,6 @@ def add_scan(email,time,room_id):
     
     #invalid date format
     except:
-        print("invalid date")
         cur.close()
         conn.close()
         return -1
@@ -65,13 +66,13 @@ def add_scan(email,time,room_id):
     #success
     return 0
 
-
+#Checks if a person with the specified email exists in the people table
 def exists_in_people(email,cur):
 
     cur.execute(f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
+    
     result = cur.fetchone()
-    print(f"returned from count query: {result[0]}")
-
+    
     #person exists in people table
     if(result[0] != 0):
         return True
@@ -90,20 +91,12 @@ def add_person(first,last, id):
     cur = conn.cursor()
 
     #generate email
-    #email = first +last+ str(datetime.now().timestamp())+"@fake.com"
-    email = "duplicated"
-    print(f"email: {email}")
-
+    email = first +last+ str(datetime.now().timestamp())+"@fake.com"
+    
     #person exists in the people table
     if(exists_in_people(email,cur) == True):
-        print("person with this email exists")
         return -1
 
-    #person doesn't exist in people table. Add him
-     
-    print("email doesn't exist")
-
-    #person doesn't exist in people table. Add them
     name = first + " " + last
     
     #add person info to people table 
@@ -117,13 +110,41 @@ def add_person(first,last, id):
 
     return 0
 
-        
+#retrieves info for person with email from db
+#returns -1 if no match found 
+def get_person(email):
+    
+     #Conect to DB
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
+    
+    #cursor
+    cur = conn.cursor()
+    
+    cur.execute(f"SELECT * FROM PEOPLE WHERE email = '{email}'")
+    
+    result = cur.fetchone()
+    
+    #person exists in people table
+    if(result is not None):
+        print(result)
+    #person doesn't exist in people table
+    else:
+        print("person doesn't exist")
+        cur.close()
+        conn.close()
+        return -1
+
+
+
+
 
 if __name__ == "__main__":
-    if(len(sys.argv) == 4):
+    if(len(sys.argv) == 2):
         #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
         #    print("success")
         #else:
         #    print("failed")
-        add_person(sys.argv[1],sys.argv[2],sys.argv[3])
+        #add_person(sys.argv[1],sys.argv[2],sys.argv[3])
+        get_person(sys.argv[1])
         
+
