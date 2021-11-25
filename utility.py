@@ -226,7 +226,7 @@ if __name__ == "__main__":
         #get_person(sys.argv[1])
         #get_all_users()
         #add_room(sys.argv[1],sys.argv[2],sys.argv[3])
-        get_room(sys.argv[1])
+        print(get_room(sys.argv[1]))
 
     
         
