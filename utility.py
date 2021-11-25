@@ -217,7 +217,7 @@ def get_all_users():
 
 
 if __name__ == "__main__":
-    if(len(sys.argv) == 1):
+    if(len(sys.argv) == 2):
         #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
         #    print("success")
         #else:
