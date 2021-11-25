@@ -134,17 +134,44 @@ def get_person(email):
         conn.close()
         return -1
 
+#retrieves all users from people table 
+def get_all_users():
+    
+     #Conect to DB
+    conn = psycopg2.connect(database="ctdb", user = "postgres", password = "capstone rocks", host = "127.0.0.1", port = "5432")
+    
+    #cursor
+    cur = conn.cursor()
+    
+    cur.execute(f"SELECT * FROM PEOPLE")
+    
+    result = cur.fetchall()
+    
+    #table is not empty
+    if(result is not None):
+        print(result)
+    #table is empty
+    else:
+        print("Table is empty")
+        cur.close()
+        conn.close()
+        return -1
+
+
+
 
 
 
 
 if __name__ == "__main__":
-    if(len(sys.argv) == 2):
+    if(len(sys.argv) == 1):
         #if(add_scan(sys.argv[1],sys.argv[2],sys.argv[3]) == 0):
         #    print("success")
         #else:
         #    print("failed")
         #add_person(sys.argv[1],sys.argv[2],sys.argv[3])
-        get_person(sys.argv[1])
+        #get_person(sys.argv[1])
+        get_all_users()
+    
         
 
