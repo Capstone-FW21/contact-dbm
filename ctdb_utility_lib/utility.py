@@ -32,7 +32,7 @@ def add_scan(email:str,room_id:str):
     
     #add scan info to scans table 
     cur.execute(f"INSERT INTO scans (scan_id, person_email,scan_time,room_id) \
-            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}',{room_id})")
+            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}')")
     
     #commit changes to db
     conn.commit()
