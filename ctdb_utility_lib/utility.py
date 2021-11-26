@@ -95,7 +95,7 @@ def add_person(first:str,last:str, id:int):
     name = first + " " + last
     
     #add person info to people table 
-    cur.execute(f"INSERT INTO PEOPLE (EMAIL,NAME,ID) \
+    cur.execute(f"INSERT INTO PEOPLE (email,name,student_id) \
         VALUES ('{email}','{name}',{id})")
     
     #commit changes to db
