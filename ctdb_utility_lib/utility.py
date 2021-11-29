@@ -113,7 +113,7 @@ def add_person(first: str, last: str, id: int):
 
     # person exists in the people table
     if exists_in_people(email, cur):
-        return -1
+        return None
 
     name = first + " " + last
 
@@ -128,7 +128,7 @@ def add_person(first: str, last: str, id: int):
     cur.close()
     conn.close()
 
-    return 0
+    return email
 
 
 # retrieves info for person with email from db
