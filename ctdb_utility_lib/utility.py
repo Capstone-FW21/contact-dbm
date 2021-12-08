@@ -180,7 +180,7 @@ def add_room(room_id: str, capacity: int, building_name: str):
     conn = psycopg2.connect(
         database="ctdb",
         user="postgres",
-        password="capstone rocks",
+        password="newpassword",
         host="127.0.0.1",
         port="5432",
     )
