@@ -5,6 +5,7 @@ setup(
     packages=find_packages(include=["ctdb_utility_lib"]),
     version="0.1.4",
     description="Contact Tracer DB Utility Python library",
+    install_requires=["psycopg2"],
     author="Ahmed",
     license="MIT",
 )
