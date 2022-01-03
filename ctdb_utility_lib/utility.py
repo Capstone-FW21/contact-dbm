@@ -99,7 +99,7 @@ def add_person(first: str, last: str, id: int):
         database="ctdb",
         user="postgres",
         password="capstone rocks",
-        host="127.0.0.1",
+        host="34.134.138.81",
         port="5432",
     )
 
