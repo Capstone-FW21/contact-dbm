@@ -15,6 +15,10 @@ def validate_email_format(email: str):
 # throws exception in case of error accessing db
 def add_scan(email: str, room_id: str):
 
+    # Invalid email format
+    if not validate_email_format(email):
+        return -1
+
     # Conect to DB
     conn = psycopg2.connect(
         database="ctdb",
@@ -26,12 +30,6 @@ def add_scan(email: str, room_id: str):
 
     # Cursor
     cur = conn.cursor()
-
-    # Invalid email format
-    if not validate_email_format(email):
-        cur.close()
-        conn.close()
-        return -1
 
     # create current datetime obj
     current_date_time = datetime.now()
