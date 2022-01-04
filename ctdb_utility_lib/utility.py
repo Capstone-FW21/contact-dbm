@@ -21,10 +21,10 @@ def add_scan(email: str, room_id: str):
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="capstone rocks",
-        host="127.0.0.1",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
@@ -55,10 +55,10 @@ def get_scan(scan_id: int):
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="capstone rocks",
-        host="127.0.0.1",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
@@ -96,10 +96,10 @@ def add_person(first: str, last: str, id: int):
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="capstone rocks",
-        host="34.134.138.81",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
@@ -135,10 +135,10 @@ def get_person(email: str):
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="capstone rocks",
-        host="127.0.0.1",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
@@ -176,10 +176,10 @@ def add_room(room_id: str, capacity: int, building_name: str):
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="newpassword",
-        host="127.0.0.1",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
@@ -217,10 +217,10 @@ def get_room(room_id: str):
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="capstone rocks",
-        host="127.0.0.1",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
@@ -243,10 +243,10 @@ def get_all_users():
 
     # Conect to DB
     conn = psycopg2.connect(
-        database="ctdb",
+        database="Contact_Tracing_DB",
         user="postgres",
-        password="capstone rocks",
-        host="127.0.0.1",
+        password="password",
+        host="34.134.212.102",
         port="5432",
     )
 
