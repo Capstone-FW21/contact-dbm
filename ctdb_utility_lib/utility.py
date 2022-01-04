@@ -1,7 +1,18 @@
 import psycopg2
+from psycopg2 import connection
 import re
 from datetime import datetime
 import sys
+
+
+def connect_to_db():
+    """
+    Connects to the database and returns a connection object.
+    """
+    return psycopg2.connect(
+        database="Contact_Tracing_DB", user="postgres", password="password", host="34.134.212.102"
+    )
+
 
 # check email format
 def validate_email_format(email: str):
@@ -13,20 +24,11 @@ def validate_email_format(email: str):
 # add a scan to the scans table in db
 # returns -1 in case of an invalid email format
 # throws exception in case of error accessing db
-def add_scan(email: str, room_id: str):
+def add_scan(email: str, room_id: str, conn: connection):
 
     # Invalid email format
     if not validate_email_format(email):
         return -1
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
 
     # Cursor
     cur = conn.cursor()
@@ -51,16 +53,7 @@ def add_scan(email: str, room_id: str):
 
 # retrieves scan info
 # returns -1 if no match found
-def get_scan(scan_id: int):
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
+def get_scan(scan_id: int, conn: connection):
 
     # cursor
     cur = conn.cursor()
@@ -92,16 +85,7 @@ def exists_in_people(email: str, cur):
 
 
 # add person to people table
-def add_person(first: str, last: str, id: int):
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
+def add_person(first: str, last: str, id: int, conn: connection):
 
     # cursor
     cur = conn.cursor()
@@ -123,24 +107,13 @@ def add_person(first: str, last: str, id: int):
 
     # commit changes to db
     conn.commit()
-    cur.close()
-    conn.close()
 
     return email
 
 
 # retrieves info for person with email from db
 # returns -1 if no match found
-def get_person(email: str):
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
+def get_person(email: str, conn: connection):
 
     # cursor
     cur = conn.cursor()
@@ -149,9 +122,6 @@ def get_person(email: str):
 
     # person row
     result = cur.fetchone()
-
-    cur.close()
-    conn.close()
 
     return result
 
@@ -172,29 +142,15 @@ def exists_in_rooms(room_id: str, cur):
 
 
 # add room entry to room table
-def add_room(room_id: str, capacity: int, building_name: str):
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
-
+def add_room(room_id: str, capacity: int, building_name: str, conn: connection):
     # cursor
     cur = conn.cursor()
 
     if not (room_id and building_name):
-        cur.close()
-        conn.close()
         return -1
 
     # person exists in the people table
     if exists_in_rooms(room_id, cur):
-        cur.close()
-        conn.close()
         return -1
 
     # add room to rooms table
@@ -205,24 +161,13 @@ def add_room(room_id: str, capacity: int, building_name: str):
 
     # commit changes to db
     conn.commit()
-    cur.close()
-    conn.close()
 
     return 0
 
 
 # retrieves room info
 # returns -1 if no match found
-def get_room(room_id: str):
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
+def get_room(room_id: str, conn: connection):
 
     # cursor
     cur = conn.cursor()
@@ -232,23 +177,11 @@ def get_room(room_id: str):
     # room row
     result = cur.fetchone()
 
-    cur.close()
-    conn.close()
-
     return result
 
 
 # retrieves all users from people table
-def get_all_users():
-
-    # Conect to DB
-    conn = psycopg2.connect(
-        database="Contact_Tracing_DB",
-        user="postgres",
-        password="password",
-        host="34.134.212.102",
-        port="5432",
-    )
+def get_all_users(conn: connection):
 
     # cursor
     cur = conn.cursor()
@@ -258,8 +191,5 @@ def get_all_users():
 
     # rows
     result = cur.fetchall()
-
-    cur.close()
-    conn.close()
 
     return result
