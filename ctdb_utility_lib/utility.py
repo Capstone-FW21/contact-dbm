@@ -16,7 +16,7 @@ def connect_to_db():
 
 # check email format
 def validate_email_format(email: str):
-    regex = "^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$"
+    regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
 
     return re.search(regex, email) != None
 
