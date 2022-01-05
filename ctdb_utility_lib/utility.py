@@ -23,6 +23,17 @@ def validate_email_format(email: str):
     return re.search(regex, email) != None
 
 
+def _execute_statement(conn, statement):
+    cursor = conn.cursor()
+    try:
+        cursor.execute(statement)
+        conn.commit()
+    except psycopg2.Error:
+        conn.rollback()
+        return None
+    return cursor
+
+
 # add a scan to the scans table in db
 # returns -1 in case of an invalid email format
 # throws exception in case of error accessing db
@@ -32,22 +43,15 @@ def add_scan(email: str, room_id: str, conn):
     if not validate_email_format(email):
         return -1
 
-    # Cursor
-    cur = conn.cursor()
-
     # create current datetime obj
     current_date_time = datetime.now()
 
     # add scan info to scans table
-    cur.execute(
+    _execute_statement(
+        conn,
         f"INSERT INTO scans (scan_id, person_email,scan_time,room_id) \
-            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}')"
+            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}')",
     )
-
-    # commit changes to db
-    conn.commit()
-    cur.close()
-    conn.close()
 
     # success
     return 0
@@ -57,12 +61,7 @@ def add_scan(email: str, room_id: str, conn):
 # returns -1 if no match found
 def get_scan(scan_id: int, conn):
 
-    # cursor
-    cur = conn.cursor()
-
-    cur.execute(f"SELECT * FROM scans WHERE scan_id = '{scan_id}'")
-
-    # scan row
+    cur = _execute_statement(conn, f"SELECT * FROM scans WHERE scan_id = '{scan_id}'")
     result = cur.fetchone()
 
     cur.close()
@@ -72,9 +71,9 @@ def get_scan(scan_id: int, conn):
 
 
 # Checks if a person with the specified email exists in the people table
-def exists_in_people(email: str, cur):
+def exists_in_people(email: str, conn):
 
-    cur.execute(f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
+    cur = _execute_statement(conn, f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
 
     result = cur.fetchone()
 
@@ -89,26 +88,21 @@ def exists_in_people(email: str, cur):
 # add person to people table
 def add_person(first: str, last: str, id: int, conn):
 
-    # cursor
-    cur = conn.cursor()
-
     # generate email
     email = first + last + str(datetime.now().timestamp()) + "@fake.com"
 
     # person exists in the people table
-    if exists_in_people(email, cur):
+    if exists_in_people(email, conn):
         return None
 
     name = first + " " + last
 
     # add person info to people table
-    cur.execute(
+    _execute_statement(
+        conn,
         f"INSERT INTO PEOPLE (email,name,student_id) \
-        VALUES ('{email}','{name}',{id})"
+        VALUES ('{email}','{name}',{id})",
     )
-
-    # commit changes to db
-    conn.commit()
 
     return email
 
@@ -117,10 +111,7 @@ def add_person(first: str, last: str, id: int, conn):
 # returns -1 if no match found
 def get_person(email: str, conn):
 
-    # cursor
-    cur = conn.cursor()
-
-    cur.execute(f"SELECT * FROM PEOPLE WHERE email = '{email}'")
+    cur = _execute_statement(conn, f"SELECT * FROM PEOPLE WHERE email = '{email}'")
 
     # person row
     result = cur.fetchone()
@@ -129,9 +120,9 @@ def get_person(email: str, conn):
 
 
 # Checks if room with room_id already exists
-def exists_in_rooms(room_id: str, cur):
+def exists_in_rooms(room_id: str, conn):
 
-    cur.execute(f"SELECT COUNT(*) FROM ROOMS WHERE room_id = '{room_id}'")
+    cur = _execute_statement(conn, f"SELECT COUNT(*) FROM ROOMS WHERE room_id = '{room_id}'")
 
     result = cur.fetchone()
 
@@ -146,23 +137,19 @@ def exists_in_rooms(room_id: str, cur):
 # add room entry to room table
 def add_room(room_id: str, capacity: int, building_name: str, conn):
     # cursor
-    cur = conn.cursor()
-
     if not (room_id and building_name):
         return -1
 
     # person exists in the people table
-    if exists_in_rooms(room_id, cur):
+    if exists_in_rooms(room_id, conn):
         return -1
 
     # add room to rooms table
-    cur.execute(
+    _execute_statement(
+        conn,
         f"INSERT INTO ROOMS (room_id,capacity,building_name) \
-        VALUES ('{room_id}','{capacity}','{building_name}')"
+        VALUES ('{room_id}','{capacity}','{building_name}')",
     )
-
-    # commit changes to db
-    conn.commit()
 
     return 0
 
@@ -171,10 +158,7 @@ def add_room(room_id: str, capacity: int, building_name: str, conn):
 # returns -1 if no match found
 def get_room(room_id: str, conn):
 
-    # cursor
-    cur = conn.cursor()
-
-    cur.execute(f"SELECT * FROM ROOMS WHERE room_id = '{room_id}'")
+    cur = _execute_statement(conn, f"SELECT * FROM ROOMS WHERE room_id = '{room_id}'")
 
     # room row
     result = cur.fetchone()
@@ -185,11 +169,8 @@ def get_room(room_id: str, conn):
 # retrieves all users from people table
 def get_all_users(conn):
 
-    # cursor
-    cur = conn.cursor()
-
     # execute query
-    cur.execute(f"SELECT * FROM PEOPLE")
+    cur = _execute_statement(conn, f"SELECT * FROM PEOPLE")
 
     # rows
     result = cur.fetchall()
