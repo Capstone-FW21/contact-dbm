@@ -47,11 +47,13 @@ def add_scan(email: str, room_id: str, conn):
     current_date_time = datetime.now()
 
     # add scan info to scans table
-    _execute_statement(
+    cur = _execute_statement(
         conn,
         f"INSERT INTO scans (scan_id, person_email,scan_time,room_id) \
             VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}')",
     )
+    if cur is None:
+        raise LookupError("Could not insert into scans, SQL error")
 
     # success
     return 0
@@ -101,12 +103,13 @@ def add_person(first: str, last: str, id: int, conn):
     name = first + " " + last
 
     # add person info to people table
-    _execute_statement(
+    cur = _execute_statement(
         conn,
         f"INSERT INTO PEOPLE (email,name,student_id) \
         VALUES ('{email}','{name}',{id})",
     )
-
+    if cur is None:
+        raise LookupError("Could not insert into people, SQL error")
     return email
 
 
@@ -150,12 +153,13 @@ def add_room(room_id: str, capacity: int, building_name: str, conn):
         return -1
 
     # add room to rooms table
-    _execute_statement(
+    cur = _execute_statement(
         conn,
         f"INSERT INTO ROOMS (room_id,capacity,building_name) \
         VALUES ('{room_id}','{capacity}','{building_name}')",
     )
-
+    if cur is None:
+        raise LookupError("Could not insert into ROOMS, SQL error")
     return 0
 
 
