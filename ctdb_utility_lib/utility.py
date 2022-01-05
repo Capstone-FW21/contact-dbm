@@ -1,5 +1,4 @@
 import psycopg2
-from psycopg2 import connection
 import re
 from datetime import datetime
 import sys
@@ -10,7 +9,10 @@ def connect_to_db():
     Connects to the database and returns a connection object.
     """
     return psycopg2.connect(
-        database="postgres", user="postgres", password="1234", host="34.134.212.102"
+        database="Contact_Tracing_DB",
+        user="postgres",
+        password="password",
+        host="34.134.212.102",
     )
 
 
@@ -24,7 +26,7 @@ def validate_email_format(email: str):
 # add a scan to the scans table in db
 # returns -1 in case of an invalid email format
 # throws exception in case of error accessing db
-def add_scan(email: str, room_id: str, conn: connection):
+def add_scan(email: str, room_id: str, conn):
 
     # Invalid email format
     if not validate_email_format(email):
@@ -53,7 +55,7 @@ def add_scan(email: str, room_id: str, conn: connection):
 
 # retrieves scan info
 # returns -1 if no match found
-def get_scan(scan_id: int, conn: connection):
+def get_scan(scan_id: int, conn):
 
     # cursor
     cur = conn.cursor()
@@ -85,7 +87,7 @@ def exists_in_people(email: str, cur):
 
 
 # add person to people table
-def add_person(first: str, last: str, id: int, conn: connection):
+def add_person(first: str, last: str, id: int, conn):
 
     # cursor
     cur = conn.cursor()
@@ -113,7 +115,7 @@ def add_person(first: str, last: str, id: int, conn: connection):
 
 # retrieves info for person with email from db
 # returns -1 if no match found
-def get_person(email: str, conn: connection):
+def get_person(email: str, conn):
 
     # cursor
     cur = conn.cursor()
@@ -142,7 +144,7 @@ def exists_in_rooms(room_id: str, cur):
 
 
 # add room entry to room table
-def add_room(room_id: str, capacity: int, building_name: str, conn: connection):
+def add_room(room_id: str, capacity: int, building_name: str, conn):
     # cursor
     cur = conn.cursor()
 
@@ -167,7 +169,7 @@ def add_room(room_id: str, capacity: int, building_name: str, conn: connection):
 
 # retrieves room info
 # returns -1 if no match found
-def get_room(room_id: str, conn: connection):
+def get_room(room_id: str, conn):
 
     # cursor
     cur = conn.cursor()
@@ -181,7 +183,7 @@ def get_room(room_id: str, conn: connection):
 
 
 # retrieves all users from people table
-def get_all_users(conn: connection):
+def get_all_users(conn):
 
     # cursor
     cur = conn.cursor()
