@@ -62,10 +62,12 @@ def add_scan(email: str, room_id: str, conn):
 def get_scan(scan_id: int, conn):
 
     cur = _execute_statement(conn, f"SELECT * FROM scans WHERE scan_id = '{scan_id}'")
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
+
     result = cur.fetchone()
 
     cur.close()
-    conn.close()
 
     return result
 
@@ -74,7 +76,8 @@ def get_scan(scan_id: int, conn):
 def exists_in_people(email: str, conn):
 
     cur = _execute_statement(conn, f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
-
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
     result = cur.fetchone()
 
     # person exists in people table
@@ -112,7 +115,8 @@ def add_person(first: str, last: str, id: int, conn):
 def get_person(email: str, conn):
 
     cur = _execute_statement(conn, f"SELECT * FROM PEOPLE WHERE email = '{email}'")
-
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
     # person row
     result = cur.fetchone()
 
@@ -123,7 +127,8 @@ def get_person(email: str, conn):
 def exists_in_rooms(room_id: str, conn):
 
     cur = _execute_statement(conn, f"SELECT COUNT(*) FROM ROOMS WHERE room_id = '{room_id}'")
-
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
     result = cur.fetchone()
 
     # room exists in rooms table
@@ -159,7 +164,8 @@ def add_room(room_id: str, capacity: int, building_name: str, conn):
 def get_room(room_id: str, conn):
 
     cur = _execute_statement(conn, f"SELECT * FROM ROOMS WHERE room_id = '{room_id}'")
-
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
     # room row
     result = cur.fetchone()
 
@@ -171,7 +177,8 @@ def get_all_users(conn):
 
     # execute query
     cur = _execute_statement(conn, f"SELECT * FROM PEOPLE")
-
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
     # rows
     result = cur.fetchall()
 
