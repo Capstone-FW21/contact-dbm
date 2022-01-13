@@ -1,4 +1,3 @@
-#admin utility
 import psycopg2
 import re
 from datetime import datetime, timedelta
@@ -16,21 +15,25 @@ def connect_to_db():
         host="34.134.212.102",
     )
 
-def _execute_statement(conn, statement):
-    cursor = conn.cursor()
-    try:
-        cursor.execute(statement)
-        conn.commit()
-    except psycopg2.Error:
-        conn.rollback()
-        return None
-    return cursor
 
-
+# check email format
 def validate_email_format(email: str):
     regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
 
     return re.search(regex, email) != None
+
+
+def _execute_statement(conn, statement):
+    """
+    Executes a PSQL statement with a given connection.
+
+    Returns a cursor with the response of the statement.
+    """
+    cursor = conn.cursor()
+    cursor.execute(statement)
+    conn.commit()
+
+    return cursor
 
 
 #retreives records for every scan made
