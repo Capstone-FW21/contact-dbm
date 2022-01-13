@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2 import Error
 import re
 from datetime import datetime
 import sys
@@ -24,18 +25,20 @@ def validate_email_format(email: str):
 
 
 def _execute_statement(conn, statement):
+    """
+    Executes a PSQL statement with a given connection.
+
+    Returns a cursor with the response of the statement.
+    """
     cursor = conn.cursor()
-    try:
-        cursor.execute(statement)
-        conn.commit()
-    except psycopg2.Error:
-        conn.rollback()
-        return None
+    cursor.execute(statement)
+    conn.commit()
+
     return cursor
 
 
 # add a scan to the scans table in db
-# returns -1 in case of an invalid email format
+# returns errro message in case of an invalid email format
 # throws exception in case of error accessing db
 def add_scan(email: str, room_id: str, conn):
 
@@ -52,8 +55,6 @@ def add_scan(email: str, room_id: str, conn):
         f"INSERT INTO scans (scan_id, person_email,scan_time,room_id) \
             VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}')",
     )
-    if cur is None:
-        raise LookupError("Could not insert into scans, SQL error")
 
     # success
     return 0
@@ -64,8 +65,6 @@ def add_scan(email: str, room_id: str, conn):
 def get_scan(scan_id: int, conn):
 
     cur = _execute_statement(conn, f"SELECT * FROM scans WHERE scan_id = '{scan_id}'")
-    if cur is None:
-        raise LookupError("Error occured while executing the SQL statement")
 
     result = cur.fetchone()
 
@@ -78,8 +77,6 @@ def get_scan(scan_id: int, conn):
 def exists_in_people(email: str, conn):
 
     cur = _execute_statement(conn, f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
-    if cur is None:
-        raise LookupError("Error occured while executing the SQL statement")
     result = cur.fetchone()
 
     # person exists in people table
@@ -108,8 +105,6 @@ def add_person(first: str, last: str, id: int, conn):
         f"INSERT INTO PEOPLE (email,name,student_id) \
         VALUES ('{email}','{name}',{id})",
     )
-    if cur is None:
-        raise LookupError("Could not insert into people, SQL error")
     return email
 
 
@@ -118,8 +113,6 @@ def add_person(first: str, last: str, id: int, conn):
 def get_person(email: str, conn):
 
     cur = _execute_statement(conn, f"SELECT * FROM PEOPLE WHERE email = '{email}'")
-    if cur is None:
-        raise LookupError("Error occured while executing the SQL statement")
     # person row
     result = cur.fetchone()
 
@@ -130,8 +123,6 @@ def get_person(email: str, conn):
 def exists_in_rooms(room_id: str, conn):
 
     cur = _execute_statement(conn, f"SELECT COUNT(*) FROM ROOMS WHERE room_id = '{room_id}'")
-    if cur is None:
-        raise LookupError("Error occured while executing the SQL statement")
     result = cur.fetchone()
 
     # room exists in rooms table
@@ -158,8 +149,6 @@ def add_room(room_id: str, capacity: int, building_name: str, conn):
         f"INSERT INTO ROOMS (room_id,capacity,building_name) \
         VALUES ('{room_id}','{capacity}','{building_name}')",
     )
-    if cur is None:
-        raise LookupError("Could not insert into ROOMS, SQL error")
     return 0
 
 
@@ -168,8 +157,6 @@ def add_room(room_id: str, capacity: int, building_name: str, conn):
 def get_room(room_id: str, conn):
 
     cur = _execute_statement(conn, f"SELECT * FROM ROOMS WHERE room_id = '{room_id}'")
-    if cur is None:
-        raise LookupError("Error occured while executing the SQL statement")
     # room row
     result = cur.fetchone()
 
@@ -181,8 +168,6 @@ def get_all_users(conn):
 
     # execute query
     cur = _execute_statement(conn, f"SELECT * FROM PEOPLE")
-    if cur is None:
-        raise LookupError("Error occured while executing the SQL statement")
     # rows
     result = cur.fetchall()
 
