@@ -123,7 +123,7 @@ def get_person(email: str, conn):
     # person row
     result = cur.fetchone()
 
-    return result
+    return result[0]
 
 
 # Checks if room with room_id already exists
