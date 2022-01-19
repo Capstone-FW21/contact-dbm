@@ -1,8 +1,6 @@
 import psycopg2
-from psycopg2 import Error
 import re
 from datetime import datetime
-import sys
 
 
 def connect_to_db():
@@ -22,6 +20,10 @@ def validate_email_format(email: str):
     regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
 
     return re.search(regex, email) != None
+
+
+def batch_add_people(conn, people: list):
+    pass
 
 
 def _execute_statement(conn, statement):
