@@ -22,10 +22,6 @@ def validate_email_format(email: str):
     return re.search(regex, email) != None
 
 
-def batch_add_people(conn, people: list):
-    pass
-
-
 def _execute_statement(conn, statement):
     """
     Executes a PSQL statement with a given connection.
