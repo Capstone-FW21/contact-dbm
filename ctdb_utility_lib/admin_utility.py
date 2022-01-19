@@ -1,3 +1,4 @@
+from os import stat
 import psycopg2
 import re
 from datetime import datetime, timedelta
@@ -37,10 +38,15 @@ def _execute_statement(conn, statement):
 
 
 #retreives records for every scan made
-def retrieve_records(conn):
+def retrieve_records(limit:int,conn):
 
+    if(limit != 0):
+        statement = f"SELECT * FROM scans ORDER BY scan_time LIMIT '{limit}'"
+    else:
+        statement = "SELECT * FROM scans" 
+     
     #cursor
-    cur = _execute_statement(conn, "SELECT * FROM scans")
+    cur = _execute_statement(conn, statement)
     
     #executing SQL statement failed
     if(cur == None):
@@ -54,13 +60,18 @@ def retrieve_records(conn):
     return result
 
 #retreives records for every scan made by a specific user
-def retrieve_user_records(email:str,conn):
+def retrieve_user_records(email:str,limit:int,conn):
 
     if not validate_email_format(email):
         return -1
+    
+    if(limit != 0):
+        statement = f"SELECT * FROM scans WHERE person_email = '{email}' ORDER BY scan_time LIMIT '{limit}'"
+    else:
+        statement = f"SELECT * FROM scans WHERE person_email = '{email}'"
 
     #cursor
-    cur = _execute_statement(conn, f"SELECT * FROM scans WHERE person_email = '{email}'")
+    cur = _execute_statement(conn, statement)
     
     #executing SQL statement failed
     if(cur == None):

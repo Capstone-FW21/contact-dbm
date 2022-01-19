@@ -11,12 +11,3 @@ Creating people table:
 
 Creating scans table:
     CREATE TABLE scans (scan_id serial PRIMARY KEY,person_email VARCHAR(50) NOT NULL,scan_time TIMESTAMP NOT NULL,room_id VARCHAR(25) NOT NULL, FOREIGN KEY (room_id) REFERENCES rooms(room_id), FOREIGN KEY (person_email) REFERENCES people(email));
-
-
-SELECT *,
-(
-    SELECT COUNT(DISTINICT person_email)
-    FROM scans
-    WHERE room_id = rooms.room_id
-) 
-FROM rooms;
