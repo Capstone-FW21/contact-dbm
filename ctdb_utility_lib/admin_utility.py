@@ -16,7 +16,6 @@ def connect_to_db():
         host="34.134.212.102",
     )
 
-
 # check email format
 def validate_email_format(email: str):
     regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
@@ -100,13 +99,13 @@ def retrieve_contacts(email:str,date:datetime,conn):
     #query all the students the infected student has been in contact with 
     cur = _execute_statement(conn, f"""
         WITH rooms_attended AS(
-            SELECT room_id,scan_time
+            SELECT room_id,scan_time,x_pos,y_pos
             FROM scans
             WHERE scan_time > TIMESTAMP'{date}' - INTERVAL'7 days' AND person_email = '{email}'
         )
         SELECT scans.*
         FROM rooms_attended, scans
-        WHERE scans.person_email != '{email}' AND scans.room_id = rooms_attended.room_id AND (scans.scan_time BETWEEN rooms_attended.scan_time - INTERVAL'1 hour' AND rooms_attended.scan_time + INTERVAL'1 hour'); 
+        WHERE scans.person_email != '{email}' AND scans.room_id = rooms_attended.room_id AND (scans.scan_time BETWEEN rooms_attended.scan_time - INTERVAL'1 hour' AND rooms_attended.scan_time + INTERVAL'1 hour') AND (sqrt(power(rooms_attended.x_pos - scans.x_pos,2) + power(rooms_attended.y_pos - scans.y_pos,2)) < 10); 
     """) 
 
     #list of contacts 
