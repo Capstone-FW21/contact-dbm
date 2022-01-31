@@ -17,7 +17,7 @@ def connect_to_db():
     )
 
 # check email format
-def validate_email_format(email: str):
+def valid_email_format(email: str):
     regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
 
     return re.search(regex, email) != None
@@ -61,7 +61,7 @@ def retrieve_records(limit:int,conn):
 #retreives records for every scan made by a specific user
 def retrieve_user_records(email:str,limit:int,conn):
 
-    if not validate_email_format(email):
+    if not valid_email_format(email):
         return -1
     
     if(limit != 0):
@@ -89,7 +89,7 @@ def retrieve_user_records(email:str,limit:int,conn):
 def retrieve_contacts(email:str,date:datetime,conn):
 
     #validate email format
-    if not validate_email_format(email):
+    if not valid_email_format(email):
         return -1
     
     #validate that the passed in date is no more than 14 days before today's date
