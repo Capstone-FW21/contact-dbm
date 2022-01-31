@@ -40,13 +40,27 @@ def _execute_statement(conn, statement):
     return cursor
 
 
+def get_room_aspect_ratio(room_id:str,conn) -> list:
+    
+    # run query to get aspect ratio for specified room
+    cur = _execute_statement(conn,f"SELECT aspect_ratio FROM rooms WHERE room_id = '{room_id}'")
+    result = cur.fetchone()
+    return result[0].split(":")
+
+
 # add a scan to the scans table in db
-# returns errro message in case of an invalid email format
+# returns error message in case of an invalid email format
 # throws exception in case of error accessing db
 def add_scan(email: str, room_id: str, x_pos: int, y_pos: int, conn):
 
     # Invalid email format
     if not valid_email_format(email):
+        return -1
+    
+    width_length = get_room_aspect_ratio(room_id,conn)
+    
+    #invalid position
+    if(x_pos < 0 or x_pos > int(width_length[0]) or y_pos < 0 or y_pos > int(width_length[1])):
         return -1
 
     # create current datetime obj
@@ -121,7 +135,6 @@ def get_person(email: str, conn):
 
     return result[0]
 
-
 # Checks if room with room_id already exists
 def exists_in_rooms(room_id: str, conn):
 
@@ -134,7 +147,6 @@ def exists_in_rooms(room_id: str, conn):
     # rooms doesn't exist in rooms table
     else:
         return False
-
 
 # add room entry to room table
 def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str ,conn):
@@ -157,7 +169,6 @@ def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str 
     )
     return 0
 
-
 # retrieves room info
 # returns -1 if no match found
 def get_room(room_id: str, conn):
@@ -167,7 +178,6 @@ def get_room(room_id: str, conn):
     result = cur.fetchone()
 
     return result
-
 
 # retrieves all users from people table
 def get_all_users(conn):
