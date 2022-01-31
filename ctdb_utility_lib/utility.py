@@ -21,7 +21,7 @@ def valid_email_format(email: str) -> bool:
 
     return re.search(regex, email) != None
 
-def valid_aspect_ratio(aspect_ratio:str) -> bool:
+def valid_aspect_ratio_format(aspect_ratio:str) -> bool:
     
     width_length = aspect_ratio.split(":")
     
@@ -158,7 +158,7 @@ def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str 
     if exists_in_rooms(room_id, conn):
         return -1
     
-    if not valid_aspect_ratio(aspect_ratio):
+    if not valid_aspect_ratio_format(aspect_ratio):
         return -1
 
     # add room to rooms table
