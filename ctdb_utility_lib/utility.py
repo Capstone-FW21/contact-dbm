@@ -1,3 +1,4 @@
+from xmlrpc.client import boolean
 import psycopg2
 import re
 from datetime import datetime
@@ -14,13 +15,17 @@ def connect_to_db():
         host="34.134.212.102",
     )
 
-
 # check email format
-def validate_email_format(email: str):
+def valid_email_format(email: str) -> bool:
     regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
 
     return re.search(regex, email) != None
 
+def valid_aspect_ratio(aspect_ratio:str) -> bool:
+    
+    width_length = aspect_ratio.split(":")
+    
+    return len(width_length) == 2 and width_length[0].isnumeric() and width_length[1].isnumeric()
 
 def _execute_statement(conn, statement):
     """
@@ -38,10 +43,10 @@ def _execute_statement(conn, statement):
 # add a scan to the scans table in db
 # returns errro message in case of an invalid email format
 # throws exception in case of error accessing db
-def add_scan(email: str, room_id: str, conn):
+def add_scan(email: str, room_id: str, x_pos: int, y_pos: int, conn):
 
     # Invalid email format
-    if not validate_email_format(email):
+    if not valid_email_format(email):
         return -1
 
     # create current datetime obj
@@ -50,8 +55,8 @@ def add_scan(email: str, room_id: str, conn):
     # add scan info to scans table
     cur = _execute_statement(
         conn,
-        f"INSERT INTO scans (scan_id, person_email,scan_time,room_id) \
-            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}')",
+        f"INSERT INTO scans (scan_id, person_email,scan_time,room_id,x_pos,y_pos) \
+            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}','{x_pos}','{y_pos}')",
     )
 
     # success
@@ -132,20 +137,23 @@ def exists_in_rooms(room_id: str, conn):
 
 
 # add room entry to room table
-def add_room(room_id: str, capacity: int, building_name: str, conn):
-    # cursor
-    if not (room_id and building_name):
+def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str ,conn):
+    
+    if not (room_id and building_name and aspect_ratio):
         return -1
 
     # person exists in the people table
     if exists_in_rooms(room_id, conn):
         return -1
+    
+    if not valid_aspect_ratio(aspect_ratio):
+        return -1
 
     # add room to rooms table
     cur = _execute_statement(
         conn,
-        f"INSERT INTO ROOMS (room_id,capacity,building_name) \
-        VALUES ('{room_id}','{capacity}','{building_name}')",
+        f"INSERT INTO ROOMS (room_id,capacity,building_name,aspect_ratio) \
+        VALUES ('{room_id}','{capacity}','{building_name}','{aspect_ratio}')",
     )
     return 0
 
