@@ -276,9 +276,8 @@ def get_buildings_count(conn) -> int:
 
     return result[0]
 
-#gets building name, # of rooms in that building,
-# # of scans that has been made in that building, and 
-# the total number of unique students that scanned in that building 
+#gets building name, # of rooms in that building, # of scans that has been made in that building,
+# the total number of unique students that scanned in that building, and scans per day 
 def get_buildings(conn):
 
     cur = _execute_statement(conn, 
