@@ -15,7 +15,6 @@ def connect_to_db():
         host="34.134.212.102",
     )
 
-
 # check email format
 def valid_email_format(email: str) -> bool:
     regex = "^[A-Za-z0-9]+[\._]?[A-Za-z0-9]+[@]\w+[.]\w{2,3}$"
@@ -71,7 +70,6 @@ def add_personal_scan(scanner_email: str, scanned_email: str, conn):
 
     return 0
 
-
 # add a scan to the scans table in db
 # returns error message in case of an invalid email format
 # throws exception in case of error accessing db
@@ -100,7 +98,6 @@ def add_scan(email: str, room_id: str, x_pos: int, y_pos: int, conn):
     # success
     return 0
 
-
 # retrieves scan info
 # returns -1 if no match found
 def get_scan(scan_id: int, conn):
@@ -112,7 +109,6 @@ def get_scan(scan_id: int, conn):
     cur.close()
 
     return result
-
 
 # Checks if a person with the specified email exists in the people table
 def exists_in_people(email: str, conn):
@@ -126,7 +122,6 @@ def exists_in_people(email: str, conn):
     # person doesn't exist in people table
     else:
         return False
-
 
 # add person to people table
 def add_person(first: str, last: str, id: int, conn):
@@ -148,7 +143,6 @@ def add_person(first: str, last: str, id: int, conn):
     )
     return email
 
-
 # retrieves info for person with email from db
 # returns -1 if no match found
 def get_person(email: str, conn):
@@ -158,7 +152,6 @@ def get_person(email: str, conn):
     result = cur.fetchone()
 
     return result[0]
-
 
 # Checks if room with room_id already exists
 def exists_in_rooms(room_id: str, conn):
@@ -172,7 +165,6 @@ def exists_in_rooms(room_id: str, conn):
     # rooms doesn't exist in rooms table
     else:
         return False
-
 
 # add room entry to room table
 def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str, conn):
@@ -194,7 +186,6 @@ def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str,
         VALUES ('{room_id}','{capacity}','{building_name}','{aspect_ratio}')",
     )
     return 0
-
 
 # retrieves room info
 # returns -1 if no match found

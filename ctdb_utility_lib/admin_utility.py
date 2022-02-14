@@ -1,4 +1,5 @@
 from os import stat
+from typing import Tuple
 import psycopg2
 import re
 from datetime import datetime, timedelta
@@ -22,7 +23,6 @@ def valid_email_format(email: str):
 
     return re.search(regex, email) != None
 
-
 def _execute_statement(conn, statement):
     """
     Executes a PSQL statement with a given connection.
@@ -35,9 +35,8 @@ def _execute_statement(conn, statement):
 
     return cursor
 
-
-#retreives records for every scan made
-def retrieve_records(limit:int,conn):
+#gets records for every scan made
+def get_records(limit:int,conn):
 
     if(limit != 0):
         statement = f"SELECT * FROM scans ORDER BY scan_time LIMIT '{limit}'"
@@ -53,13 +52,16 @@ def retrieve_records(limit:int,conn):
     
     #fetch query results
     result = cur.fetchall()
+
+    if(len(result) == 0):
+        return None
     
     cur.close()
 
     return result
 
-#retreives records for every scan made by a specific user
-def retrieve_user_records(email:str,limit:int,conn):
+#gets records for every scan made by a specific user
+def get_user_records(email:str,limit:int,conn):
 
     if not valid_email_format(email):
         return -1
@@ -78,15 +80,16 @@ def retrieve_user_records(email:str,limit:int,conn):
     
     #fetch query results
     result = cur.fetchall()
+
+    if(len(result) == 0):
+        return None
     
     cur.close()
 
     return result
 
-
-
-#Retrieve people who were in contact with the person reporting a positive covid test
-def retrieve_contacts(email:str,date:datetime,conn):
+#get people who were in contact with the person reporting a positive covid test
+def get_contacts(email:str,date:datetime,conn):
 
     #validate email format
     if not valid_email_format(email):
@@ -110,12 +113,15 @@ def retrieve_contacts(email:str,date:datetime,conn):
 
     #list of contacts 
     contacts = cur.fetchall()
+
+    if(len(contacts) == 0):
+        return None
     
     cur.close()
 
     return contacts
 
-#retreive all people and the amount of scans they have
+#get all people and the amount of scans they have
 def get_people(conn):
 
     cur = _execute_statement(conn, 
@@ -133,12 +139,16 @@ def get_people(conn):
     
     result = cur.fetchall()
 
+    if(len(result) == 0):
+        return None
+    
+
     cur.close()
 
     return result
 
-#retreive records count
-def get_records_count(conn):
+#get records count
+def get_records_count(conn) -> int:
 
     cur = _execute_statement(conn, f"SELECT COUNT(*) FROM scans")
 
@@ -146,26 +156,56 @@ def get_records_count(conn):
         raise LookupError("Error occured while executing the SQL statement")
     
     result = cur.fetchone()
-
+    
     cur.close()
 
     return result[0]
 
-#retreives room id, capacity, building, count of unique students that have scanned in the room, and the total number of scans that happened in the room 
+#gets number of students in database
+def get_students_count(conn) -> int:
+    cur = _execute_statement(conn, 
+    f"""
+        SELECT COUNT(*)
+        FROM (SELECT DISTINCT email FROM people) as temp;
+    """)
+    
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
+
+    result = cur.fetchone()
+
+    return result[0]
+
+#gets number of rooms in database
+def get_rooms_count(conn) -> int:
+    cur = _execute_statement(conn, 
+    f"""
+        SELECT COUNT(*)
+        FROM (SELECT DISTINCT room_id, building_name FROM rooms) AS temp;
+    """)
+    
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
+
+    result = cur.fetchone()
+
+    return result[0]
+
+#gets room id, capacity, building name, the total number of scans that happened in the room,
+#count of unique students that have scanned in the room, and # of scans per day for that room 
 def get_rooms(conn):
 
     cur = _execute_statement(conn, 
     f"""
         SELECT *,
         (
-            SELECT COUNT (DISTINCT person_email)
+            SELECT COUNT(*)
             FROM scans
             WHERE room_id = rooms.room_id
         ),
         (
-            SELECT COUNT(*)
-            FROM scans
-            WHERE room_id = rooms.room_id
+            SELECT COUNT (*)
+            FROM (SELECT DISTINCT person_email FROM scans WHERE room_id = rooms.room_id) AS temp
         )
         
         FROM rooms
@@ -173,12 +213,72 @@ def get_rooms(conn):
     
     if cur is None:
         raise LookupError("Error occured while executing the SQL statement")
-    # room row
+    
     result = cur.fetchall()
 
+    if(len(result) == 0):
+        return None
+
+    #add scans per day
+    for i in range(len(result)):
+        List = list(result[i])
+        List.append(round(List[4] / 14,1))
+        result[i] = tuple(List)
+        
     return result
 
-#retreives building name, # of rooms in that building, # of scans that has been made in that building, and the total number of unique students that scanned in that building 
+def get_room(room_id:str, conn):
+
+    cur = _execute_statement(conn, 
+    f"""
+        SELECT *,
+        (
+            SELECT COUNT(*)
+            FROM scans
+            WHERE room_id = '{room_id}'
+        ),
+        (
+            SELECT COUNT (*)
+            FROM (SELECT DISTINCT person_email FROM scans WHERE room_id = '{room_id}') AS temp
+        )
+        
+        FROM rooms
+        WHERE room_id = '{room_id}'
+    """)
+    
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
+    
+    result = cur.fetchall()
+
+    
+    if(len(result) == 0):
+        return None
+    
+    #add scans per day
+    List = list(result[0])
+    List.append(round(List[4] / 14,1))
+
+    return tuple(List)
+    
+#gets number of buildings in database
+def get_buildings_count(conn) -> int:
+    cur = _execute_statement(conn, 
+    f"""
+        SELECT COUNT(*)
+        FROM (SELECT DISTINCT building_name FROM rooms) as temp;
+    """)
+    
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
+
+    result = cur.fetchone()
+
+    return result[0]
+
+#gets building name, # of rooms in that building,
+# # of scans that has been made in that building, and 
+# the total number of unique students that scanned in that building 
 def get_buildings(conn):
 
     cur = _execute_statement(conn, 
@@ -205,8 +305,57 @@ def get_buildings(conn):
     
     if cur is None:
         raise LookupError("Error occured while executing the SQL statement")
-    # room row
+    
     result = cur.fetchall()
 
+    if(len(result) == 0):
+        return None
+
+    #add scans per day
+    for i in range(len(result)):
+        List = list(result[i])
+        List.append(round(List[2] / 14,1))
+        result[i] = tuple(List)
+    
     return result    
+
+def get_building(building_name:str, conn):
+
+    cur = _execute_statement(conn, 
+    f"""
+        SELECT DISTINCT building_name,
+        (
+            SELECT COUNT (*)
+            FROM rooms AS rooms_2
+            WHERE rooms_2.building_name = rooms_1.building_name
+        ),
+        (
+            SELECT COUNT(*)
+            FROM scans AS scans_1, rooms AS rooms_3
+            WHERE scans_1.room_id = rooms_3.room_id AND rooms_1.building_name = rooms_3.building_name
+        ),
+        (
+            SELECT COUNT(DISTINCT person_email)
+            FROM scans as scans_2, rooms AS rooms_4
+            WHERE scans_2.room_id = rooms_4.room_id AND rooms_1.building_name = rooms_4.building_name
+        )
+        
+        FROM rooms AS rooms_1
+        WHERE building_name = '{building_name}'
+    """)
+    
+    if cur is None:
+        raise LookupError("Error occured while executing the SQL statement")
+    
+    result = cur.fetchall()
+
+    if(len(result) == 0):
+        return None
+
+    #add scans per day
+    List = list(result[0])
+    List.append(round(List[2] / 14,1))
+    
+    return tuple(List)
+
     
