@@ -166,7 +166,7 @@ def get_students_count(conn) -> int:
     cur = _execute_statement(conn, 
     f"""
         SELECT COUNT(*)
-        FROM (SELECT DISTINCT email FROM people) as temp;
+        FROM people;
     """)
     
     if cur is None:
@@ -181,7 +181,7 @@ def get_rooms_count(conn) -> int:
     cur = _execute_statement(conn, 
     f"""
         SELECT COUNT(*)
-        FROM (SELECT DISTINCT room_id, building_name FROM rooms) AS temp;
+        FROM rooms;
     """)
     
     if cur is None:

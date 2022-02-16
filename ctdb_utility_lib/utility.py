@@ -73,7 +73,7 @@ def add_personal_scan(scanner_email: str, scanned_email: str, conn):
 # add a scan to the scans table in db
 # returns error message in case of an invalid email format
 # throws exception in case of error accessing db
-def add_scan(email: str, room_id: str, x_pos: int, y_pos: int, conn):
+def add_scan(email: str, room_id: str, x_pos: float, y_pos: float, conn):
 
     # Invalid email format
     if not valid_email_format(email):
@@ -82,7 +82,7 @@ def add_scan(email: str, room_id: str, x_pos: int, y_pos: int, conn):
     width_length = get_room_aspect_ratio(room_id, conn)
 
     # invalid position
-    if x_pos < 0 or x_pos > int(width_length[0]) or y_pos < 0 or y_pos > int(width_length[1]):
+    if x_pos < 0 or x_pos > float(width_length[0]) or y_pos < 0 or y_pos > float(width_length[1]):
         return -1
 
     # create current datetime obj
