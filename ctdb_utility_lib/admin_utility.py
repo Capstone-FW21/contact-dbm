@@ -127,7 +127,7 @@ def get_people(conn):
     cur = _execute_statement(conn, 
         f"""SELECT email,name,student_id,
         (
-            SELECT COUNT(*)
+            SELECT COUNT(person_email)
             FROM scans
             WHERE scans.person_email = people.email 
         )
@@ -150,7 +150,7 @@ def get_people(conn):
 #get records count
 def get_records_count(conn) -> int:
 
-    cur = _execute_statement(conn, f"SELECT COUNT(*) FROM scans")
+    cur = _execute_statement(conn, f"SELECT COUNT(scan_id) FROM scans")
 
     if cur is None:
         raise LookupError("Error occured while executing the SQL statement")
@@ -165,7 +165,7 @@ def get_records_count(conn) -> int:
 def get_students_count(conn) -> int:
     cur = _execute_statement(conn, 
     f"""
-        SELECT COUNT(*)
+        SELECT COUNT(email)
         FROM people;
     """)
     
@@ -180,7 +180,7 @@ def get_students_count(conn) -> int:
 def get_rooms_count(conn) -> int:
     cur = _execute_statement(conn, 
     f"""
-        SELECT COUNT(*)
+        SELECT COUNT(room_id)
         FROM rooms;
     """)
     
@@ -199,13 +199,14 @@ def get_rooms(conn):
     f"""
         SELECT *,
         (
-            SELECT COUNT(*)
-            FROM scans
-            WHERE room_id = rooms.room_id
+            SELECT COUNT(scan_id)
+            FROM scans s
+            INNER JOIN rooms r
+            ON s.room_id = r.room_id
         ),
         (
-            SELECT COUNT (*)
-            FROM (SELECT DISTINCT person_email FROM scans WHERE room_id = rooms.room_id) AS temp
+            SELECT COUNT (person_email)
+            FROM (SELECT DISTINCT person_email FROM scans s INNER JOIN rooms r ON s.room_id = r.room_id) AS temp
         )
         
         FROM rooms
@@ -233,12 +234,12 @@ def get_room(room_id:str, conn):
     f"""
         SELECT *,
         (
-            SELECT COUNT(*)
+            SELECT COUNT(scan_id)
             FROM scans
             WHERE room_id = '{room_id}'
         ),
         (
-            SELECT COUNT (*)
+            SELECT COUNT (person_email)
             FROM (SELECT DISTINCT person_email FROM scans WHERE room_id = '{room_id}') AS temp
         )
         
@@ -265,7 +266,7 @@ def get_room(room_id:str, conn):
 def get_buildings_count(conn) -> int:
     cur = _execute_statement(conn, 
     f"""
-        SELECT COUNT(*)
+        SELECT COUNT(building_name)
         FROM (SELECT DISTINCT building_name FROM rooms) as temp;
     """)
     
@@ -284,12 +285,12 @@ def get_buildings(conn):
     f"""
         SELECT DISTINCT building_name,
         (
-            SELECT COUNT (*)
+            SELECT COUNT (room_id)
             FROM rooms AS rooms_2
             WHERE rooms_2.building_name = rooms_1.building_name
         ),
         (
-            SELECT COUNT(*)
+            SELECT COUNT(scan_id)
             FROM scans AS scans_1, rooms AS rooms_3
             WHERE scans_1.room_id = rooms_3.room_id AND rooms_1.building_name = rooms_3.building_name
         ),
@@ -324,12 +325,12 @@ def get_building(building_name:str, conn):
     f"""
         SELECT DISTINCT building_name,
         (
-            SELECT COUNT (*)
+            SELECT COUNT (room_id)
             FROM rooms AS rooms_2
             WHERE rooms_2.building_name = rooms_1.building_name
         ),
         (
-            SELECT COUNT(*)
+            SELECT COUNT(scan_id)
             FROM scans AS scans_1, rooms AS rooms_3
             WHERE scans_1.room_id = rooms_3.room_id AND rooms_1.building_name = rooms_3.building_name
         ),

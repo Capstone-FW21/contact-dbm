@@ -111,18 +111,14 @@ def get_scan(scan_id: int, conn):
     return result
 
 # Checks if a person with the specified email exists in the people table
-def exists_in_people(email: str, conn):
+def exists_in_people(email: str, conn) -> bool:
 
-    cur = _execute_statement(conn, f"SELECT COUNT(*) FROM PEOPLE WHERE email = '{email}'")
+    cur = _execute_statement(conn, f"SELECT EXISTS(SELECT 1 FROM PEOPLE WHERE email = '{email}')")
+    
     result = cur.fetchone()
-
-    # person exists in people table
-    if result[0] != 0:
-        return True
-    # person doesn't exist in people table
-    else:
-        return False
-
+    
+    return result[0]
+    
 # add person to people table
 def add_person(first: str, last: str, id: int, conn):
 
@@ -156,16 +152,11 @@ def get_person(email: str, conn):
 # Checks if room with room_id already exists
 def exists_in_rooms(room_id: str, conn):
 
-    cur = _execute_statement(conn, f"SELECT COUNT(*) FROM ROOMS WHERE room_id = '{room_id}'")
+    cur = _execute_statement(conn, f"SELECT EXISTS( SELECT 1 FROM ROOMS WHERE room_id = '{room_id}')")
+    
     result = cur.fetchone()
 
-    # room exists in rooms table
-    if result[0] != 0:
-        return True
-    # rooms doesn't exist in rooms table
-    else:
-        return False
-
+    return result[0]
 # add room entry to room table
 def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str, conn):
 
