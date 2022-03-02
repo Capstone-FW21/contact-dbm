@@ -1,3 +1,4 @@
+import string
 from xmlrpc.client import boolean
 import psycopg2
 import re
@@ -21,7 +22,6 @@ def valid_email_format(email: str) -> bool:
 
     return re.search(regex, email) != None
 
-
 def valid_aspect_ratio_format(aspect_ratio: str) -> bool:
 
     width_length = aspect_ratio.split(":")
@@ -29,7 +29,6 @@ def valid_aspect_ratio_format(aspect_ratio: str) -> bool:
     return (
         len(width_length) == 2 and width_length[0].isnumeric() and width_length[1].isnumeric()
     )
-
 
 def _execute_statement(conn, statement):
     """
@@ -42,7 +41,6 @@ def _execute_statement(conn, statement):
     conn.commit()
 
     return cursor
-
 
 def get_room_aspect_ratio(room_id: str, conn) -> list:
 
@@ -79,11 +77,12 @@ def add_scan(email: str, room_id: str, x_pos: float, y_pos: float, conn):
     if not valid_email_format(email):
         return -1
 
-    width_length = get_room_aspect_ratio(room_id, conn)
-
     # invalid position
-    if x_pos < 0 or x_pos > float(width_length[0]) or y_pos < 0 or y_pos > float(width_length[1]):
+    if x_pos < 0 or x_pos > 1 or y_pos < 0 or y_pos > 1:
         return -1
+    
+    #get aspect ratio
+    aspect_ratio = get_room_aspect_ratio(room_id,conn)
 
     # create current datetime obj
     current_date_time = datetime.now()
@@ -92,7 +91,7 @@ def add_scan(email: str, room_id: str, x_pos: float, y_pos: float, conn):
     cur = _execute_statement(
         conn,
         f"INSERT INTO scans (scan_id, person_email,scan_time,room_id,x_pos,y_pos) \
-            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}','{x_pos}','{y_pos}')",
+            VALUES (DEFAULT,'{email}',TIMESTAMP '{current_date_time}','{room_id}','{x_pos * float(aspect_ratio[0]) }','{y_pos * float(aspect_ratio[1])}')"
     )
 
     # success
@@ -158,16 +157,13 @@ def exists_in_rooms(room_id: str, conn):
 
     return result[0]
 # add room entry to room table
-def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio: str, conn):
+def add_room(room_id: str, capacity: int, building_name: str, aspect_ratio:string, conn):
 
-    if not (room_id and building_name and aspect_ratio):
+    if not (room_id and building_name and valid_aspect_ratio_format(aspect_ratio)):
         return -1
 
     # person exists in the people table
     if exists_in_rooms(room_id, conn):
-        return -1
-
-    if not valid_aspect_ratio_format(aspect_ratio):
         return -1
 
     # add room to rooms table
@@ -187,7 +183,6 @@ def get_room(room_id: str, conn):
     result = cur.fetchone()
 
     return result
-
 
 # retrieves all users from people table
 def get_all_users(conn):

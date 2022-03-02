@@ -99,26 +99,35 @@ def get_contacts(email:str,date:datetime,conn):
     if(datetime.now() - date > timedelta(days=14)):
         return -1 
 
-    #query all the students the infected student has been in contact with 
+    #query all the students the infected student has been in contact with in a classroom
     cur = _execute_statement(conn, f"""
         WITH rooms_attended AS(
             SELECT room_id,scan_time,x_pos,y_pos
             FROM scans
             WHERE scan_time > TIMESTAMP'{date}' - INTERVAL'7 days' AND person_email = '{email}'
         )
-        SELECT scans.*
+        SELECT scans.person_email
         FROM rooms_attended, scans
         WHERE scans.person_email != '{email}' AND scans.room_id = rooms_attended.room_id AND (scans.scan_time BETWEEN rooms_attended.scan_time - INTERVAL'1 hour' AND rooms_attended.scan_time + INTERVAL'1 hour') AND (sqrt(power(rooms_attended.x_pos - scans.x_pos,2) + power(rooms_attended.y_pos - scans.y_pos,2)) < 10); 
-    """) 
+    """)
 
-    #list of contacts 
+     
     contacts = cur.fetchall()
+
+    #query all students that infected student has been in contact with outside of classroom
+    cur = _execute_statement(conn, f"""
+        SELECT scanned_email
+        FROM personal_scans
+        WHERE scanner_email = '{email}' AND scan_time > TIMESTAMP'{date}' - INTERVAL'7 days'; 
+    """)
+
+    contacts += cur.fetchall()
+
+    cur.close()
 
     if(len(contacts) == 0):
         return None
     
-    cur.close()
-
     return contacts
 
 #get all people and the amount of scans they have
