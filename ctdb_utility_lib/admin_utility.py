@@ -106,7 +106,7 @@ def get_contacts(email:str,date:datetime,conn):
             FROM scans
             WHERE scan_time > TIMESTAMP'{date}' - INTERVAL'7 days' AND person_email = '{email}'
         )
-        SELECT scans.person_email
+        SELECT DISTINCT scans.person_email
         FROM rooms_attended, scans
         WHERE scans.person_email != '{email}' AND scans.room_id = rooms_attended.room_id AND (scans.scan_time BETWEEN rooms_attended.scan_time - INTERVAL'1 hour' AND rooms_attended.scan_time + INTERVAL'1 hour') AND (sqrt(power(rooms_attended.x_pos - scans.x_pos,2) + power(rooms_attended.y_pos - scans.y_pos,2)) < 10); 
     """)
@@ -116,7 +116,7 @@ def get_contacts(email:str,date:datetime,conn):
 
     #query all students that infected student has been in contact with outside of classroom
     cur = _execute_statement(conn, f"""
-        SELECT scanned_email
+        SELECT DISTINCT scanned_email
         FROM personal_scans
         WHERE scanner_email = '{email}' AND scan_time > TIMESTAMP'{date}' - INTERVAL'7 days'; 
     """)
