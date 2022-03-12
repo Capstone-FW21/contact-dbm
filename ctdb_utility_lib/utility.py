@@ -123,6 +123,7 @@ def add_person(first: str, last: str, id: int, conn):
 
     # generate email
     email = first + last + str(datetime.now().timestamp()) + "@fake.com"
+    email = email.lower()
 
     # person exists in the people table
     if exists_in_people(email, conn):
